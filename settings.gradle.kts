@@ -1,3 +1,2 @@
-
 rootProject.name = "protocol"
-include("common")
+include("common", "codegen")

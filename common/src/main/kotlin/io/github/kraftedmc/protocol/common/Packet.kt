@@ -1,4 +1,6 @@
-package io.github.kraftedmc.protocol
+package io.github.kraftedmc.protocol.common
+
+import io.netty.buffer.ByteBuf
 
 interface Packet {
     val id: Int
@@ -7,8 +9,4 @@ interface Packet {
 
     fun unpack(buffer: ByteBuf) {}
     fun pack(buffer: ByteBuf) {}
-
-    fun createEvent(): Event? {
-        return null
-    }
 }
