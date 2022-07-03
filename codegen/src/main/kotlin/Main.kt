@@ -23,6 +23,6 @@ fun main(args: Array<String>) {
     packets.values
         .map { it as Map<String, *> }
         .forEach {
-            codegen.generatePacketClass("protocol_$protocol", it).writeTo(System.out)
+            codegen.generatePacketClass("protocol_$protocol", it)
         }
 }

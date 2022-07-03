@@ -9717,7 +9717,7 @@
               "type": "string"
             },
             {
-              "field": "a.getName()",
+              "field": "a.tName()",
               "operation": "write",
               "type": "string"
             }
