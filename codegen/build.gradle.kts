@@ -16,6 +16,7 @@ dependencies {
     implementation("com.squareup:kotlinpoet:1.12.0")
     implementation("com.fasterxml.jackson.core:jackson-core:2.13.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
+    implementation(project(":common"))
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,7 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.TypeSpec
 import java.io.File
 
 fun main(args: Array<String>) {
@@ -25,15 +23,6 @@ fun main(args: Array<String>) {
     packets.values
         .map { it as Map<String, *> }
         .forEach {
-            val className = (it["class"]!! as String).split(".")[0]
-
-            val file = FileSpec.builder("protocol_$protocol", className)
-                .addType(
-                    TypeSpec.classBuilder(className)
-                        .build()
-                )
-                .build()
-
-            file.writeTo(System.out)
+            codegen.generatePacketClass("protocol_$protocol", it).writeTo(System.out)
         }
 }
