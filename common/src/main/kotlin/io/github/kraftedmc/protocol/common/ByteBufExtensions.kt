@@ -1,6 +1,7 @@
 package io.github.kraftedmc.protocol.common
 
 import io.netty.buffer.ByteBuf
+import java.util.*
 
 private const val SEGMENT_BITS = 0x7F
 private const val CONTINUE_BIT = 0x80
@@ -45,4 +46,54 @@ fun ByteBuf.readVarLong(): Long {
     }
 
     return value
+}
+
+fun ByteBuf.readString(): String {
+    val length = readVarInt()
+    val bytes = readBytes(length)
+
+    return bytes.toString(Charsets.UTF_8)
+}
+
+fun ByteBuf.writeString(data: String) {
+    writeVarInt(data.length)
+    this.writeBytes(data.toByteArray(Charsets.UTF_8))
+}
+
+fun ByteBuf.writeVarInt(data: Int) {
+    var value = data
+    while (true) {
+        if (value and SEGMENT_BITS == value) {
+            writeByte(value)
+            return
+        }
+
+        writeByte(value and SEGMENT_BITS or CONTINUE_BIT)
+        value = value ushr 7
+    }
+}
+
+fun ByteBuf.writeVarLong(data: Long) {
+    var value = data
+    while (true) {
+        if (value and SEGMENT_BITS.toLong() == value) {
+            writeByte(value.toInt())
+            return
+        }
+
+        writeByte((value and SEGMENT_BITS.toLong() or CONTINUE_BIT.toLong()).toInt())
+        value = value ushr 7
+    }
+}
+
+fun ByteBuf.readVarBoolean(): Boolean {
+    return this.readByte() == 0x01.toByte()
+}
+
+fun ByteBuf.writeVarBoolean(boolean: Boolean) {
+    this.writeByte(if (boolean) 0x01 else 0x00)
+}
+
+fun ByteBuf.readUniqueId(): UUID {
+    return UUID(readVarLong(), readVarLong())
 }
