@@ -78,13 +78,7 @@ object codegen {
             .addParameter("buffer", ByteBuf::class.java)
             .returns(Unit::class.java)
 
-        // Server -> Client
-        if(direction == Direction.Clientbound) {
-            packFunBuilder = generatePackFun(packFunBuilder, packet)
-        }
-
-        // Client -> Server
-        if(direction == Direction.Serverbound) { }
+        packFunBuilder = generatePackFun(packFunBuilder, packet)
 
         // create the file
 
