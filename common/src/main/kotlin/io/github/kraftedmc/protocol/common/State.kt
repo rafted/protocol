@@ -5,5 +5,18 @@ enum class State {
     Status,
     Login,
     Play,
-    Closed
+    Closed;
+
+    companion object {
+        fun get(name: String): State? {
+            return when(name.uppercase()) {
+                "HANDSHAKING", "HANDSHAKE" -> State.Handshake
+                "LOGIN" -> State.Login
+                "STATUS" -> State.Status
+                "PLAY" -> State.Play
+                "CLOSED" -> State.Closed
+                else -> null
+            }
+        }
+    }
 }

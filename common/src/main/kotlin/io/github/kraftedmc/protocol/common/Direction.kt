@@ -9,5 +9,14 @@ enum class Direction {
     /**
      * Client to Server
      */
-    Serverbound
+    Serverbound;
+
+    companion object {
+        fun get(name: String): Direction? {
+            return Direction.values()
+                .filter { it.name.equals(name, true) }
+                .firstOrNull()
+        }
+
+    }
 }

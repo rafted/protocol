@@ -49,7 +49,7 @@ object codegen {
             .build()
 
         // direction property
-        val direction = util.getDirection(packet["direction"]!! as String)
+        val direction = Direction.get(packet["direction"]!! as String)
 
         val directionProperty = PropertySpec.builder("direction", Direction::class.java)
             .addModifiers(KModifier.FINAL)
@@ -57,7 +57,7 @@ object codegen {
             .build()
 
         // state property
-        val state = util.getState(packet["state"]!! as String)
+        val state = State.get(packet["state"]!! as String)
 
         val stateProperty = PropertySpec.builder("state", State::class.java)
             .addModifiers(KModifier.FINAL)
