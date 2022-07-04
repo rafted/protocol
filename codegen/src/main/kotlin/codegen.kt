@@ -1,13 +1,33 @@
 import Operation.*
 import com.squareup.kotlinpoet.*
-import io.github.kraftedmc.protocol.common.Direction
-import io.github.kraftedmc.protocol.common.Packet
-import io.github.kraftedmc.protocol.common.State
+import io.github.kraftedmc.protocol.common.*
 import io.netty.buffer.ByteBuf
+import kotlin.reflect.KFunction
+import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.jvm.reflect
 
 typealias PacketDef = Map<String, *>
 
-enum class Operation() {
+enum class Type(val writeFun: KFunction<*>, val readFun: KFunction<*>) {
+    Varint(ByteBuf::writeVarInt, ByteBuf::readVarInt),
+    Varlong(ByteBuf::writeVarLong, ByteBuf::readVarLong),
+    Short(ByteBuf::writeShort, ByteBuf::readShort),
+    String(ByteBuf::writeString, ByteBuf::readString);
+
+    companion object {
+        fun get(name: kotlin.String): Type? {
+            return when(name.lowercase()) {
+                "varint" -> Varint
+                "varlong" -> Varlong
+                "string" -> String
+                "short" -> Short
+                else -> null
+            }
+        }
+    }
+}
+
+enum class Operation {
     Write,
     Read,
     Store,
@@ -25,12 +45,11 @@ enum class Operation() {
         }
 
     companion object {
-        fun find(name: String): Operation? {
+        fun get(name: String): Operation? {
             return values().firstOrNull() { it.name.equals(name, true) }
         }
     }
 }
-
 
 @OptIn(DelicateKotlinPoetApi::class)
 object codegen {
@@ -78,7 +97,8 @@ object codegen {
             .addParameter("buffer", ByteBuf::class.java)
             .returns(Unit::class.java)
 
-        packFunBuilder = generatePackFun(packFunBuilder, packet)
+        packFunBuilder = generatePackOrUnpackFun(packFunBuilder, packet, true)
+        unpackFunBuilder = generatePackOrUnpackFun(unpackFunBuilder, packet, false)
 
         // create the file
 
@@ -98,18 +118,39 @@ object codegen {
         return file
     }
 
-    fun generatePackFun(builder: FunSpec.Builder, packet: Map<String, *>): FunSpec.Builder {
+    fun generatePackOrUnpackFun(_builder: FunSpec.Builder, packet: Map<String, *>, pack: Boolean): FunSpec.Builder {
         val instructions: List<Map<String, String>> = (packet["instructions"] as List<Map<String, String>>?)!!
+        var builder = _builder
 
         instructions.forEach {
-            val operation = Operation.find(it["operation"]!!)!!
-                .opposite // <- we do this because we're building a server,
-                          // and the instructions are from the client's side
-                          // because they've been extracted from the client
+            val operation = Operation.get(it["operation"]!!)!!
+                .let {
+                    if (pack) it else it.opposite
+                }
+
+            val type = Type.get(it["type"]!!)!!
+            val field = it["field"]!!
 
             when (operation) {
-                Write -> TODO()
-                Read -> TODO()
+                Write, Read -> {
+                    var location: String = ""
+                    var member: MemberName
+
+                    when (operation) {
+                        Write -> {
+                            location = type.writeFun.javaMethod?.declaringClass?.canonicalName!!
+                            member = MemberName(location, type.writeFun.name)
+                        }
+                        Read -> {
+                            location = type.readFun.javaMethod?.declaringClass?.canonicalName!!
+                            member = MemberName(location, type.readFun.name)
+                        }
+
+                        else -> TODO("are you stupid")
+                    }
+//
+                    builder = builder.addStatement("buffer.%M(%L)", member, field)
+                }
                 Store -> TODO()
                 If -> TODO()
                 Loop -> TODO()
