@@ -3,16 +3,34 @@ import com.squareup.kotlinpoet.*
 import io.github.kraftedmc.protocol.common.*
 import io.netty.buffer.ByteBuf
 import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
-import kotlin.reflect.jvm.javaMethod
 
 typealias PacketDef = Map<String, *>
 
-enum class Type(val writeFun: KFunction<*>, val readFun: KFunction<*>, val type: KClass<*>) {
-    Varint(ByteBuf::writeVarInt, ByteBuf::readVarInt, Int::class),
-    Varlong(ByteBuf::writeVarLong, ByteBuf::readVarLong, Long::class),
-    Short(ByteBuf::writeShort, ByteBuf::readShort, Int::class),
-    String(ByteBuf::writeString, ByteBuf::readString, kotlin.String::class);
+enum class Type(
+    val writeFun: MemberName,
+    val readFun: MemberName,
+    val type: KClass<*>
+) {
+    Varint(
+        MemberName("io.github.kraftedmc.protocol.common", "writeVarInt", true),
+        MemberName("io.github.kraftedmc.protocol.common", "readVarInt", true),
+        Int::class
+    ),
+    Varlong(
+        MemberName("io.github.kraftedmc.protocol.common", "writeVarLong", true),
+        MemberName("io.github.kraftedmc.protocol.common", "readVarLong", true),
+        Long::class
+    ),
+    Short(
+        MemberName("", "writeShort"),
+        MemberName("", "readShort"),
+        Int::class
+    ),
+    String(
+        MemberName("io.github.kraftedmc.protocol.common", "writeString"),
+        MemberName("io.github.kraftedmc.protocol.common", "readString"),
+        kotlin.String::class
+    );
 
     companion object {
         fun get(name: kotlin.String): Type? {
@@ -156,23 +174,17 @@ object codegen {
             when (operation) {
                 Write, Read -> {
 
-                    var location: String = ""
-                    var member: MemberName
-
                     when (operation) {
                         Write -> {
-                            location = type.writeFun.javaMethod?.declaringClass?.canonicalName!!
-                            member = MemberName(location, type.writeFun.name)
+                            builder = builder.addStatement("buffer.%M(%L)", type.writeFun, field)
                         }
                         Read -> {
-                            location = type.readFun.javaMethod?.declaringClass?.canonicalName!!
-                            member = MemberName(location, type.readFun.name)
+                            builder = builder.addStatement("buffer.%M(%L)", type.readFun, field)
                         }
 
                         else -> TODO("are you stupid")
                     }
-//
-                    builder = builder.addStatement("buffer.%M(%L)", member, field)
+
                 }
                 Store -> TODO()
                 If -> TODO()
