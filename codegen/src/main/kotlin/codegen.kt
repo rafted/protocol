@@ -16,7 +16,7 @@ enum class Type(val writeFun: KFunction<*>, val readFun: KFunction<*>, val type:
 
     companion object {
         fun get(name: kotlin.String): Type? {
-            return when(name.lowercase()) {
+            return when (name.lowercase()) {
                 "varint" -> Varint
                 "varlong" -> Varlong
                 "string" -> String
@@ -91,7 +91,7 @@ object codegen {
                     it["field"]!! as String,
                     Type.get(it["type"]!!.toString())!!.type
                 )
-                .build()
+                    .build()
             }
             .apply { properties = this }
 
@@ -181,5 +181,4 @@ object codegen {
 
         return builder
     }
-
 }

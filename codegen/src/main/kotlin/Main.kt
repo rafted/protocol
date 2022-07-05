@@ -3,7 +3,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
 fun main(args: Array<String>) {
-    if(args.size < 2) {
+    if (args.size < 2) {
         println("Usage: <however you ran the program> <input file> <output file>")
         return
     }
@@ -22,7 +22,13 @@ fun main(args: Array<String>) {
 
     packets.values
         .map { it as Map<String, *> }
-        .forEach {
-            codegen.generatePacketClass("protocol_$protocol", it)
+        .first().apply {
+            codegen.generatePacketClass("protocol_$protocol", this).writeTo(System.out)
         }
+//
+//    packets.values
+//        .map { it as Map<String, *> }
+//        .forEach {
+//            codegen.generatePacketClass("protocol_$protocol", it).writeTo(System.out)
+//        }
 }

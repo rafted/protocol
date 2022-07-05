@@ -17,6 +17,5 @@ enum class Direction {
                 .filter { it.name.equals(name, true) }
                 .firstOrNull()
         }
-
     }
 }
