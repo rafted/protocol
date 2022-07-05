@@ -91,7 +91,7 @@ object codegen {
                     it["field"]!! as String,
                     Type.get(it["type"]!!.toString())!!.type
                 )
-                    .build()
+                .build()
             }
             .apply { properties = this }
 
