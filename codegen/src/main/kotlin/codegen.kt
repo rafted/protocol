@@ -82,6 +82,7 @@ object codegen {
         // id property
         val idProperty = PropertySpec.builder("id", Int::class.java)
             .addModifiers(KModifier.FINAL)
+            .addModifiers(KModifier.OVERRIDE)
             .initializer("%L", packet["id"]!!)
             .build()
 
@@ -90,7 +91,17 @@ object codegen {
 
         val directionProperty = PropertySpec.builder("direction", Direction::class.java)
             .addModifiers(KModifier.FINAL)
+            .addModifiers(KModifier.OVERRIDE)
             .initializer("%L", direction)
+            .build()
+
+        // state property
+        val state = State.get(packet["state"]!! as String)
+
+        val stateProperty = PropertySpec.builder("state", State::class.java)
+            .addModifiers(KModifier.FINAL)
+            .addModifiers(KModifier.OVERRIDE)
+            .initializer("%L", state)
             .build()
 
         // field properties
@@ -112,14 +123,6 @@ object codegen {
                 .build()
             }
             .apply { properties = this }
-
-        // state property
-        val state = State.get(packet["state"]!! as String)
-
-        val stateProperty = PropertySpec.builder("state", State::class.java)
-            .addModifiers(KModifier.FINAL)
-            .initializer("%L", state)
-            .build()
 
         //
         // pack / unpack functions
