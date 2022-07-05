@@ -2,17 +2,17 @@ import Operation.*
 import com.squareup.kotlinpoet.*
 import io.github.kraftedmc.protocol.common.*
 import io.netty.buffer.ByteBuf
+import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.jvm.javaMethod
-import kotlin.reflect.jvm.reflect
 
 typealias PacketDef = Map<String, *>
 
-enum class Type(val writeFun: KFunction<*>, val readFun: KFunction<*>) {
-    Varint(ByteBuf::writeVarInt, ByteBuf::readVarInt),
-    Varlong(ByteBuf::writeVarLong, ByteBuf::readVarLong),
-    Short(ByteBuf::writeShort, ByteBuf::readShort),
-    String(ByteBuf::writeString, ByteBuf::readString);
+enum class Type(val writeFun: KFunction<*>, val readFun: KFunction<*>, val type: KClass<*>) {
+    Varint(ByteBuf::writeVarInt, ByteBuf::readVarInt, Int::class),
+    Varlong(ByteBuf::writeVarLong, ByteBuf::readVarLong, Long::class),
+    Short(ByteBuf::writeShort, ByteBuf::readShort, Int::class),
+    String(ByteBuf::writeString, ByteBuf::readString, kotlin.String::class);
 
     companion object {
         fun get(name: kotlin.String): Type? {
@@ -75,6 +75,26 @@ object codegen {
             .initializer("%L", direction)
             .build()
 
+        // field properties
+        val properties: List<PropertySpec>
+
+        (packet["instructions"]!! as List<Map<String, Any>>)
+            .filter { it["operation"] == "write" || it["operation"] == "read" }
+            .map {
+                mapOf(
+                    "field" to (it["field"]!! as String).split(".")[0],
+                    "type" to Type.get(it["type"]!! as String),
+                )
+            }
+            .map {
+                PropertySpec.builder(
+                    it["field"]!! as String,
+                    Type.get(it["type"]!!.toString())!!.type
+                )
+                .build()
+            }
+            .apply { properties = this }
+
         // state property
         val state = State.get(packet["state"]!! as String)
 
@@ -101,7 +121,6 @@ object codegen {
         unpackFunBuilder = generatePackOrUnpackFun(unpackFunBuilder, packet, false)
 
         // create the file
-
         val file = FileSpec.builder(`package`, className)
             .addType(
                 TypeSpec.classBuilder(className)
@@ -109,6 +128,7 @@ object codegen {
                     .addProperty(idProperty)
                     .addProperty(directionProperty)
                     .addProperty(stateProperty)
+                    .addProperties(properties)
                     .addFunction(packFunBuilder.build())
                     .addFunction(unpackFunBuilder.build())
                     .build()
