@@ -149,10 +149,13 @@ object codegen {
                 }
 
             val type = Type.get(it["type"]!!)!!
-            val field = it["field"]!!
+
+            // remove function calls from field to read, because in minecraft's code... well, they're weird
+            val field = (it["field"]!! as String).split(".")[0]
 
             when (operation) {
                 Write, Read -> {
+
                     var location: String = ""
                     var member: MemberName
 
