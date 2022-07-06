@@ -92,21 +92,27 @@ object codegen {
             .build()
 
         // direction property
-        val direction = Direction.get(packet["direction"]!! as String)
+        val direction = MemberName(
+            "io.github.kraftedmc.protocol.common.Direction",
+            Direction.get(packet["direction"]!! as String)!!.name
+        )
 
         val directionProperty = PropertySpec.builder("direction", Direction::class.java)
             .addModifiers(KModifier.FINAL)
             .addModifiers(KModifier.OVERRIDE)
-            .initializer("%L", direction)
+            .initializer("%M", direction)
             .build()
 
         // state property
-        val state = State.get(packet["state"]!! as String)
+        val state = MemberName(
+            "io.github.kraftedmc.protocol.common.State",
+            State.get(packet["state"]!! as String)!!.name
+        )
 
         val stateProperty = PropertySpec.builder("state", State::class.java)
             .addModifiers(KModifier.FINAL)
             .addModifiers(KModifier.OVERRIDE)
-            .initializer("%L", state)
+            .initializer("%M", state)
             .build()
 
         // field properties
