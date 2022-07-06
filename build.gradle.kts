@@ -15,14 +15,19 @@ allprojects {
         maven("https://jitpack.io")
     }
 
-    tasks.withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
 }
 
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "java")
 
-//    ktlint {
-//    }
+    dependencies {
+        implementation("io.netty:netty-all:4.1.78.Final")
+        implementation("net.kyori:adventure-api:4.11.0")
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "17"
+    }
+
 }

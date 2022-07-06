@@ -1,6 +1,8 @@
 import Operation.*
 import com.squareup.kotlinpoet.*
-import io.github.kraftedmc.protocol.common.*
+import io.github.kraftedmc.protocol.common.Direction
+import io.github.kraftedmc.protocol.common.Packet
+import io.github.kraftedmc.protocol.common.State
 import io.netty.buffer.ByteBuf
 import net.kyori.adventure.text.Component
 import kotlin.reflect.KClass
