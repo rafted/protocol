@@ -2,7 +2,10 @@ import Operation.*
 import com.squareup.kotlinpoet.*
 import io.github.kraftedmc.protocol.common.*
 import io.netty.buffer.ByteBuf
+import net.kyori.adventure.text.Component
 import kotlin.reflect.KClass
+
+val PRIMITIVES = listOf(Int::class, String::class, Long::class, Short::class)
 
 typealias PacketDef = Map<String, *>
 
@@ -10,7 +13,7 @@ enum class Type(
     val writeFun: MemberName,
     val readFun: MemberName,
     val type: KClass<*>,
-    val initializer: Any
+    val initializer: Any?
 ) {
     Varint(
         MemberName("io.github.kraftedmc.protocol.common", "writeVarInt", true),
@@ -26,7 +29,7 @@ enum class Type(
     ),
     Short(
         MemberName("", "writeShort"),
-        MemberName("", "readShort"),
+        MemberName("", "readUnsignedShort"),
         Int::class,
         0
     ),
@@ -35,6 +38,12 @@ enum class Type(
         MemberName("io.github.kraftedmc.protocol.common", "readString"),
         kotlin.String::class,
         "\"\"" // HACK: This is a hack, because either I'm stupid, or KotlinPoet is very, very stupid.
+    ),
+    ChatComponent(
+        MemberName("io.github.kraftedmc.protocol.common", "writeChatComponent"),
+        MemberName("io.github.kraftedmc.protocol.common", "readChatComponent"),
+        Component::class,
+        null
     );
 
     companion object {
@@ -44,6 +53,7 @@ enum class Type(
                 "varlong" -> Varlong
                 "string" -> String
                 "short" -> Short
+                "chatcomponent" -> ChatComponent
                 else -> null
             }
         }
@@ -128,10 +138,17 @@ object codegen {
             }
             .map {
                 val type = Type.get(it["type"]!!.toString())!!
+                val typeName = if (type.type in PRIMITIVES) {
+                    type.type.asTypeName()
+                } else {
+                    type.type.asTypeName().copy(nullable = true)
+                }
+
                 PropertySpec.builder(
                     it["field"]!! as String,
-                    type.type
+                    typeName
                 )
+                    .mutable()
                     .initializer("%L", type.initializer)
                     .build()
             }
