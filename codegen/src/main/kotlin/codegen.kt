@@ -195,7 +195,7 @@ object codegen {
                             builder = builder.addStatement("buffer.%M(%L)", type.writeFun, field)
                         }
                         Read -> {
-                            builder = builder.addStatement("buffer.%M(%L)", type.readFun, field)
+                            builder = builder.addStatement("%L = buffer.%M()", field, type.readFun)
                         }
 
                         else -> TODO("are you stupid")
