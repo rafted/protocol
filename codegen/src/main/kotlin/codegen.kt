@@ -152,7 +152,7 @@ object codegen {
         val file = FileSpec.builder(`package`, className)
             .addType(
                 TypeSpec.classBuilder(className)
-                    .superclass(Packet::class.java)
+                    .addSuperinterface(Packet::class.java)
                     .addProperty(idProperty)
                     .addProperty(directionProperty)
                     .addProperty(stateProperty)
