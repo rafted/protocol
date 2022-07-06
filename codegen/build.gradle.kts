@@ -10,6 +10,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.13.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
     implementation(project(":common"))
+    implementation("net.kyori:adventure-api:4.11.0")
 }
 
 application {

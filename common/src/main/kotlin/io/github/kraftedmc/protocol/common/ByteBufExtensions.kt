@@ -1,6 +1,8 @@
 package io.github.kraftedmc.protocol.common
 
 import io.netty.buffer.ByteBuf
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import java.util.*
 
 private const val SEGMENT_BITS = 0x7F
@@ -96,4 +98,14 @@ fun ByteBuf.writeVarBoolean(boolean: Boolean) {
 
 fun ByteBuf.readUniqueId(): UUID {
     return UUID(readVarLong(), readVarLong())
+}
+
+fun ByteBuf.readChatComponent(): Component {
+    val string = this.readString()
+    return GsonComponentSerializer.gson().deserialize(string)
+}
+
+fun ByteBuf.writeChatComponent(component: Component) {
+    val string = GsonComponentSerializer.gson().serialize(component)
+    this.writeString(string)
 }
