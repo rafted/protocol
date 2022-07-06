@@ -211,7 +211,7 @@ object codegen {
 
                     when (operation) {
                         Write -> {
-                            builder = builder.addStatement("buffer.%M(%L)", type.writeFun, field)
+                            builder = builder.addStatement("buffer.%M(%L!!)", type.writeFun, field)
                         }
                         Read -> {
                             builder = builder.addStatement("%L = buffer.%M()", field, type.readFun)
