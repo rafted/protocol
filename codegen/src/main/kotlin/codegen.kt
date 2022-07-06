@@ -9,27 +9,32 @@ typealias PacketDef = Map<String, *>
 enum class Type(
     val writeFun: MemberName,
     val readFun: MemberName,
-    val type: KClass<*>
+    val type: KClass<*>,
+    val initializer: Any
 ) {
     Varint(
         MemberName("io.github.kraftedmc.protocol.common", "writeVarInt", true),
         MemberName("io.github.kraftedmc.protocol.common", "readVarInt", true),
-        Int::class
+        Int::class,
+        0
     ),
     Varlong(
         MemberName("io.github.kraftedmc.protocol.common", "writeVarLong", true),
         MemberName("io.github.kraftedmc.protocol.common", "readVarLong", true),
-        Long::class
+        Long::class,
+        0
     ),
     Short(
         MemberName("", "writeShort"),
         MemberName("", "readShort"),
-        Int::class
+        Int::class,
+        0
     ),
     String(
         MemberName("io.github.kraftedmc.protocol.common", "writeString"),
         MemberName("io.github.kraftedmc.protocol.common", "readString"),
-        kotlin.String::class
+        kotlin.String::class,
+        "\"\"" // HACK: This is a hack, because either I'm stupid, or KotlinPoet is very, very stupid.
     );
 
     companion object {
@@ -116,11 +121,13 @@ object codegen {
                 )
             }
             .map {
+                val type = Type.get(it["type"]!!.toString())!!
                 PropertySpec.builder(
                     it["field"]!! as String,
-                    Type.get(it["type"]!!.toString())!!.type
+                    type.type
                 )
-                .build()
+                    .initializer("%L", type.initializer)
+                    .build()
             }
             .apply { properties = this }
 
